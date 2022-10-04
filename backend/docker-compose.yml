@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:12-alpine
+    container_name: db
+    environment:
+      - POSTGRES_USER=pixies
+      - POSTGRES_PASSWORD=pixies
+      - POSTGRES_DB=pixies
+    ports:
+      - 5432:5432
+    # new
+    volumes:
+      - data:/var/lib/postgresql/data
+    # new
+  backend:
+    build: .
+    environment:
+      - PORT=80
+      - SECRET_KEY=hushush
+      - DATABASE_URL=postgresql://pixies:pixies@db:5432/pixies
+      - ALLOWED_HOSTS=*
+      - CORS_ORIGIN_WHITELIST=http://localhost:8080,http://localhost:9091
+    ports:
+      - 9090:80
+    depends_on:
+      - db
+  frontend:
+    build:
+      context: ../frontend
+    ports:
+      - 9091:80
+    environment:
+      - PORT=80
+    depends_on:
+      - backend
+volumes:
+  data:
